@@ -12,9 +12,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Sidebar } from "./sidebar";
+import { useMessageContext } from "@/contexts/MessageContext";
 import Link from "next/link";
 
 export function Header() {
+  const { messageCount, loading } = useMessageContext();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
       <div className="flex items-center justify-between px-4 h-14">
@@ -117,9 +120,14 @@ export function Header() {
             <Button
               variant="ghost"
               size="sm"
-              className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 p-0"
+              className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 p-0 relative"
             >
               <MessageCircle className="w-5 h-5 text-gray-700" />
+              {!loading && messageCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 font-sans">
+                  {messageCount > 99 ? '99+' : messageCount}
+                </span>
+              )}
             </Button>
           </Link>
 

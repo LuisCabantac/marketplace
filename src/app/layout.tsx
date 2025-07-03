@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { ConditionalSidebar } from "@/components/layout/conditional-sidebar";
+import { MessageProvider } from "@/contexts/MessageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,13 +30,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-gray-50`}
       >
-        <Header />
-        <div className="flex h-[calc(100vh-56px)] sm:h-[calc(100vh-56px)]">
-          <ConditionalSidebar />
-          <main className="flex-1 overflow-y-auto bg-gray-50 w-full lg:w-auto">
-            {children}
-          </main>
-        </div>
+        <MessageProvider>
+          <Header />
+          <div className="flex h-[calc(100vh-56px)] sm:h-[calc(100vh-56px)]">
+            <ConditionalSidebar />
+            <main className="flex-1 overflow-y-auto bg-gray-50 w-full lg:w-auto">
+              {children}
+            </main>
+          </div>
+        </MessageProvider>
       </body>
     </html>
   );

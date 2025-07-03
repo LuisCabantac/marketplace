@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MessageCircle, Send } from "lucide-react";
 import { sendMessage, type SendMessageData } from "@/lib/api";
+import { useMessageContext } from "@/contexts/MessageContext";
 
 interface MessageFormProps {
   listingId: string;
@@ -20,6 +21,7 @@ export function MessageForm({
   sellerEmail,
   onMessageSent,
 }: MessageFormProps) {
+  const { incrementMessageCount } = useMessageContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [buyerEmail, setBuyerEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -45,6 +47,7 @@ export function MessageForm({
         setSuccess(true);
         setMessage("");
         setBuyerEmail("");
+        incrementMessageCount(); // Increment the message count
         onMessageSent?.();
 
         // Auto close after 2 seconds
