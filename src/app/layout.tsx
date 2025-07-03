@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Facebook Marketplace",
+  title: "Marketplace",
   description: "Buy and sell in your local community",
 };
 
