@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CategoriesModal } from "@/components/layout/categories-modal";
-import { getListings, getListingsByCategory, type Listing } from "@/lib/api";
+import { getListings, type Listing } from "@/lib/api";
 import { getCategoryByValue } from "@/lib/categories";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,26 +31,35 @@ function getRelativeTime(dateString: string): string {
 
 export default function HomePage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Update selectedCategory when URL changes
+  // Update selectedCategory and searchQuery when URL changes
   useEffect(() => {
     const categoryFromUrl = searchParams.get("category") || "all";
+    const searchFromUrl = searchParams.get("search") || "";
     setSelectedCategory(categoryFromUrl);
+    setSearchQuery(searchFromUrl);
   }, [searchParams]);
 
   useEffect(() => {
     async function fetchListings() {
       setLoading(true);
       try {
-        let data: Listing[];
-        if (selectedCategory === "all") {
-          data = await getListings();
-        } else {
-          data = await getListingsByCategory(selectedCategory);
+        const params: { category?: string; search?: string } = {};
+
+        if (selectedCategory !== "all") {
+          params.category = selectedCategory;
         }
+
+        if (searchQuery) {
+          params.search = searchQuery;
+        }
+
+        const data = await getListings(params);
         setListings(data);
       } catch (error) {
         console.error("Error fetching listings:", error);
@@ -60,7 +70,29 @@ export default function HomePage() {
     }
 
     fetchListings();
-  }, [selectedCategory]);
+  }, [selectedCategory, searchQuery]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const url = new URL(window.location.href);
+    if (searchQuery.trim()) {
+      url.searchParams.set("search", searchQuery.trim());
+    } else {
+      url.searchParams.delete("search");
+    }
+    router.push(url.pathname + url.search);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    const url = new URL(window.location.href);
+    url.searchParams.delete("search");
+    router.push(url.pathname + url.search);
+  };
 
   return (
     <div className="relative">
@@ -68,7 +100,9 @@ export default function HomePage() {
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-900 font-sans">
-            Today&apos;s picks
+            {searchQuery
+              ? `Search results for "${searchQuery}"`
+              : "Today's picks"}
           </h2>
 
           {/* Mobile Categories Button */}
@@ -81,6 +115,35 @@ export default function HomePage() {
               <span className="text-sm text-gray-700">Categories</span>
             </Button>
           </CategoriesModal>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <form onSubmit={handleSearch} className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+            <Input
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search marketplace..."
+              className="pl-10 pr-20 bg-white border border-gray-300 rounded-lg h-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm font-sans"
+            />
+            {searchQuery && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={clearSearch}
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 px-2"
+              >
+                Clear
+              </Button>
+            )}
+          </form>
+          {searchQuery && (
+            <p className="text-sm text-gray-600 mt-2 font-sans">
+              {loading ? "Searching..." : `Found ${listings.length} items`}
+            </p>
+          )}
         </div>
 
         {/* Items Grid - Mobile first approach */}

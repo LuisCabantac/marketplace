@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, ArrowLeft, Filter, Grid3X3, List } from "lucide-react";
-import { getListingsByCategory, type Listing } from "@/lib/api";
+import { Input } from "@/components/ui/input";
+import { MapPin, ArrowLeft, Grid3X3, List, Search } from "lucide-react";
+import { getListings, type Listing } from "@/lib/api";
 import { getCategoryByValue, MARKETPLACE_CATEGORIES } from "@/lib/categories";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,24 +31,41 @@ function getRelativeTime(dateString: string): string {
 export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"newest" | "price-low" | "price-high">(
     "newest"
   );
+  const [searchQuery, setSearchQuery] = useState("");
 
   const categorySlug = params.slug as string;
   const category = getCategoryByValue(categorySlug);
+
+  // Update search query from URL parameters
+  useEffect(() => {
+    const searchFromUrl = searchParams.get("search") || "";
+    setSearchQuery(searchFromUrl);
+  }, [searchParams]);
 
   useEffect(() => {
     async function fetchCategoryListings() {
       setLoading(true);
       try {
-        const data = await getListingsByCategory(categorySlug);
+        const params: { category: string; search?: string } = {
+          category: categorySlug,
+        };
+
+        if (searchQuery) {
+          params.search = searchQuery;
+        }
+
+        const data = await getListings(params);
         setListings(data);
       } catch (error) {
         console.error("Error fetching category listings:", error);
+        setListings([]);
       } finally {
         setLoading(false);
       }
@@ -56,7 +74,29 @@ export default function CategoryPage() {
     if (categorySlug) {
       fetchCategoryListings();
     }
-  }, [categorySlug]);
+  }, [categorySlug, searchQuery]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const url = new URL(window.location.href);
+    if (searchQuery.trim()) {
+      url.searchParams.set("search", searchQuery.trim());
+    } else {
+      url.searchParams.delete("search");
+    }
+    router.push(url.pathname + url.search);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    const url = new URL(window.location.href);
+    url.searchParams.delete("search");
+    router.push(url.pathname + url.search);
+  };
 
   // Sort listings
   const sortedListings = [...listings].sort((a, b) => {
@@ -122,8 +162,39 @@ export default function CategoryPage() {
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <form onSubmit={handleSearch} className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+            <Input
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder={`Search in ${category.label}...`}
+              className="pl-10 pr-20 bg-white border border-gray-300 rounded-lg h-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm font-sans"
+            />
+            {searchQuery && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={clearSearch}
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 px-2"
+              >
+                Clear
+              </Button>
+            )}
+          </form>
+          {searchQuery && (
+            <p className="text-sm text-gray-600 mt-2 font-sans">
+              {loading
+                ? "Searching..."
+                : `Found ${listings.length} items for "${searchQuery}"`}
+            </p>
+          )}
+        </div>
+
         {/* Filters and View Controls */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between">
+        <div className="mb-6 flex sm:flex-row gap-4 justify-between">
           <div className="flex gap-2">
             {/* Sort Dropdown */}
             <select
@@ -139,15 +210,6 @@ export default function CategoryPage() {
               <option value="price-low">Price: Low to High</option>
               <option value="price-high">Price: High to Low</option>
             </select>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Filter className="w-4 h-4" />
-              More filters
-            </Button>
           </div>
 
           {/* View Mode Toggle */}
