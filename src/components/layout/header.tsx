@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Search,
-  MessageCircle,
-  Bell,
-  Grid3X3,
-  Menu,
-  ShoppingBag,
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { MessageCircle, Bell, Grid3X3, Menu, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Sidebar } from "./sidebar";
@@ -43,15 +35,6 @@ export function Header() {
             <div className="w-8 h-8 bg-[#1877F2] rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-3xl font-sans">f</span>
             </div>
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative max-w-md w-full min-w-0">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
-            <Input
-              placeholder="Search Marketplace"
-              className="pl-10 bg-gray-100 border-0 rounded-full h-10 focus:bg-white focus:shadow-sm text-sm font-sans"
-            />
           </div>
         </div>
 

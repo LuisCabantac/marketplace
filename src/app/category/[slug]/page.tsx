@@ -170,7 +170,7 @@ export default function CategoryPage() {
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder={`Search in ${category.label}...`}
-              className="pl-10 pr-20 bg-white border border-gray-300 rounded-lg h-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm font-sans"
+              className="pl-10 bg-gray-100 border-0 rounded-full h-10 focus:bg-white focus:shadow-sm text-sm font-sans"
             />
             {searchQuery && (
               <Button
