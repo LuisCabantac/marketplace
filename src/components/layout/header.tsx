@@ -125,7 +125,7 @@ export function Header() {
               <MessageCircle className="w-5 h-5 text-gray-700" />
               {!loading && messageCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 font-sans">
-                  {messageCount > 99 ? '99+' : messageCount}
+                  {messageCount > 99 ? "99+" : messageCount}
                 </span>
               )}
             </Button>
