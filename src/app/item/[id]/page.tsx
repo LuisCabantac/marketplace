@@ -12,17 +12,15 @@ import { MessageForm } from "@/components/ui/message-form";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 
-// Format price to Philippine Peso
 function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-PH", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "PHP",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price);
 }
 
-// Calculate relative time using date-fns
 function getRelativeTime(dateString: string): string {
   const date = new Date(dateString);
   return formatDistanceToNow(date, { addSuffix: true });
@@ -34,6 +32,7 @@ export default function ItemDetailPage() {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [buying, setBuying] = useState(false);
 
   useEffect(() => {
     async function fetchListing() {
@@ -100,6 +99,34 @@ export default function ItemDetailPage() {
   }
 
   const category = getCategoryByValue(listing.category);
+
+  async function handleBuyNow() {
+    if (!listing) return;
+    setBuying(true);
+    try {
+      const res = await fetch("/api/payment/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          price: listing.price,
+          title: listing.title,
+          listingId: listing.id,
+          sellerEmail: listing.seller_email,
+          buyerEmail: "buyer@gmail.com",
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || "Failed to start checkout");
+      }
+    } catch {
+      alert("Error starting checkout");
+    } finally {
+      setBuying(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -176,6 +203,13 @@ export default function ItemDetailPage() {
                 <span>Listed {getRelativeTime(listing.created_at)}</span>
               </div>
             </div>
+            <Button
+              onClick={handleBuyNow}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium"
+              disabled={buying}
+            >
+              {buying ? "Redirecting..." : "Buy Now"}
+            </Button>
 
             {/* Action Buttons */}
             <div className="grid gap-4">

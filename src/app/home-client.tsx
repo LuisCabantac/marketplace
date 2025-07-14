@@ -17,7 +17,7 @@ import { formatDistanceToNow } from "date-fns";
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("en-PH", {
     style: "currency",
-    currency: "PHP",
+    currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price);
