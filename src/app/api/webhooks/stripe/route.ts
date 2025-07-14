@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 const supabase = createClient(
-  process.env.SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
