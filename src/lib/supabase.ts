@@ -1,7 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
+
+if (!supabaseUrl) {
+  throw new Error(
+    "NEXT_PUBLIC_SUPABASE_URL is required. Set this environment variable in your deployment platform (e.g., Vercel). See https://vercel.com/docs/concepts/projects/environment-variables"
+  );
+}
+if (!supabaseAnonKey) {
+  throw new Error(
+    "NEXT_PUBLIC_SUPABASE_KEY is required. Set this environment variable in your deployment platform (e.g., Vercel). See https://vercel.com/docs/concepts/projects/environment-variables"
+  );
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
